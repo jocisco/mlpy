@@ -1,10 +1,7 @@
 #!/bin/bash
 
 set -x
-<<<<<<< HEAD
 set -e
-=======
->>>>>>> f19ee9d1a1005bdcea33b9a896a4d79bb163b171
 
 ./dump_last_report_csv.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 32
 ./dump_props.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 | tee props.txt
