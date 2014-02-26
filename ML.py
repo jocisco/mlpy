@@ -74,7 +74,7 @@ class ML:
     def get_last_csv(self,did):
         return self.get_csv(self.get_last_job(did))
 
-    def clear_myreports(self):
+    def clean_myreports(self):
         url = self.server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
         myreports =  r.json["myReportList"]
@@ -88,7 +88,7 @@ class ML:
             r.raise_for_status()
             print 'delete {:<50s} [{:s}]   {:s}'.format(report["definitionName"], str(r.status_code), r.text)
 
-    def clear_props(self):
+    def clean_props(self):
         url = self.server + "/matelive/api/properties"
         r = self.get(url)
         props =  r.json["properties"]
@@ -177,9 +177,23 @@ class ML:
         jid = root.find("jid").text
         return jid
 
-    def get_job_status(self, jid):
+    def job_status(self, jid):
         url = self.server + "/matelive/reportStatus?jid=" + str(jid)
         r = self.get(url)
         root = ET.fromstring(r.text)
         status = root.find("status").text
         return status
+
+from urlparse import urlparse
+import sys
+
+def parse_url(url):
+    parsed = urlparse(url)
+    new_url = None
+    if parsed.port:
+        new_url = parsed.scheme + "://" +  str(parsed.hostname) + ":" + str(parsed.port)
+    else:
+        new_url = parsed.scheme + "://" +  parsed.hostname 
+    return parsed.username, parsed.password, new_url
+
+
