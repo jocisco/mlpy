@@ -1,16 +1,21 @@
 #!/usr/bin/python
 
-### CHANGE ME ###
-server="https://mldev01:8443"
-username="admin"
-password="cariden"
-#################
-
-import sys
+from ML import ML, parse_url
+import argparse, sys, json
 from time import sleep
 from datetime import datetime
 
-from ML import ML
+parser = argparse.ArgumentParser()
+parser.add_argument('url', metavar='http[s]://username:password@server', type=str,
+                help='url: http[s]://username:password@server.')
+args = vars(parser.parse_args())
+
+try:
+    (username, password, server) = parse_url(args['url'])
+except (ValueError,TypeError) as e:
+    print "invalid url"
+    sys.exit(1)
+
 ml = ML(server, {'username': username, 'password': password})
 
 myreports = ml.my_reports()
@@ -33,7 +38,7 @@ for report in myreports:
     while (status == "running") or (status == "created") : 
         sleep(1)
         try:
-            status = ml.get_job_status(jid)
+            status = ml.job_status(jid)
         except:
             print status, "<error>"
         diff = datetime.now() - start
