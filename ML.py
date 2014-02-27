@@ -19,6 +19,8 @@
 
 import requests, json
 import xml.etree.ElementTree as ET
+from collections import OrderedDict                                                                                                                                               
+import urllib
 
 class ML:
     def __init__ (self, server, credentials):
@@ -184,6 +186,27 @@ class ML:
         status = root.find("status").text
         return status
 
+    def explore (self,object_type, filter, count):
+        ''' Get the list of objects.'''      
+        if filter:
+            url= self.server + "/matelive/api/objects/"+object_type+"?size="+str(count)+"&offset=0&hideInactive=true&filter="+str(urllib.quote(filter))
+        else:
+            url= self.server + "/matelive/api/objects/"+object_type+"?size="+str(count)+"&offset=0&hideInactive=true"
+        r = self.get(url)
+        l=MLlist()
+        # preprocess the object...
+        for line in r.json['objectData']:
+            i=0
+            #print line
+            tmp=OrderedDict()
+            for cols in r.json['objectMeta']:
+                value=line['data'][i]
+                tmp[cols['name']]=value
+                i=i+1
+            #print tmp
+            l.append(tmp)
+        return l
+ 
 from urlparse import urlparse
 import sys
 
@@ -196,4 +219,74 @@ def parse_url(url):
         new_url = parsed.scheme + "://" +  parsed.hostname 
     return parsed.username, parsed.password, new_url
 
-
+# handle list printing
+class MLlist (list):    
+    def print_col (self):
+        max_len={}
+        errors=[]
+    
+        # determine max value lenght
+        for i in self:
+            for key, value in i.items():
+                if not key in max_len:
+                    max_len[key]=len(str(key))+1
+                try:
+                    if isinstance(value, list):
+                        value="<list of objects>"
+                    if len(str(value)) > max_len[key]:
+                        max_len[key]=len(str(value))+1
+                except Exception, e:
+                    errors.append(str(e))
+    
+        # print border
+        print "+",
+        for key in self[0].keys():
+            print '-'* max_len[key],"+",
+        print
+    
+        # print keys
+        print "|",
+        for key in self[0].keys():
+            strformat='{:<'+str(max_len[key])+'}'
+            print strformat.format(key),"|",
+        print
+    
+        # print border
+        print "+",
+        for key in self[0].keys():
+            print '-'* max_len[key],"+",
+        print
+    
+        # print values
+        for i in self:
+            print "|",
+            for key, value in i.items():
+                if isinstance(value, list):
+                    value="<list of objects>"
+                strformat='{:<'+str(max_len[key])+'}'
+                #print type(value)
+                try:
+                    print strformat.format(value),"|",
+                except Exception, e:
+                    errors.append(str(e))
+                    print strformat.format(""),"|",
+            print
+    
+        # print border
+        print "+",
+        for key in self[0].keys():
+            print '-'* max_len[key],"+",
+        print
+    
+    def print_csv (self):
+        errors=[] # should be printed
+        # print keys
+        for key in self[0].keys():
+            print key,"\t",
+        print
+    
+        for i in self:
+            for key, value in i.items():
+                    print value,"\t",
+            print
+        print
