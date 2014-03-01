@@ -18,6 +18,7 @@ import calendar
 import json
 import time
 import urllib
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from urlparse import urlparse
@@ -205,7 +206,7 @@ class ML:
         status = root.find("status").text
         return status
 
-    def explore(self, object_type, filter, count):
+    def explore(self, object_type, filter=None, count=10, properties=None):
         ''' Get the list of objects.'''
         if filter:
             url = self.server + "/matelive/api/objects/" + object_type + "?size=" + \
@@ -221,9 +222,11 @@ class ML:
             i = 0
             # print line
             tmp = OrderedDict()
+            # TODO: improve that code so the prop order follow user input
             for cols in r.json['objectMeta']:
                 value = line['data'][i]
-                tmp[cols['name']] = value
+                if not properties or cols['name'] in properties:
+                    tmp[cols['name']] = value
                 i = i + 1
             # print tmp
             l.append(tmp)
@@ -286,9 +289,9 @@ class MLlist (list):
                     errors.append(str(e))
 
         # print border
-        print "+",
+        sys.stdout.write('{:s}'.format("+"))
         for key in self[0].keys():
-            print '-' * max_len[key], "+",
+            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
         print
 
         # print keys
@@ -299,9 +302,9 @@ class MLlist (list):
         print
 
         # print border
-        print "+",
+        sys.stdout.write('{:s}'.format("+"))
         for key in self[0].keys():
-            print '-' * max_len[key], "+",
+            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
         print
 
         # print values
@@ -320,9 +323,9 @@ class MLlist (list):
             print
 
         # print border
-        print "+",
+        sys.stdout.write('{:s}'.format("+"))
         for key in self[0].keys():
-            print '-' * max_len[key], "+",
+            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
         print
 
     def print_csv(self):
