@@ -5,8 +5,10 @@ import argparse, sys
 import json
 
 parser = argparse.ArgumentParser()
-parser.add_argument('url', metavar='http[s]://username:password@server', type=str,
-                help='url: http[s]://username:password@server.')
+parser.add_argument('url', metavar='url', type=str,
+                help='http[s]://username:password@server.')
+parser.add_argument('object', metavar='object', 
+                help='Interfaces|LSPs|Nodes|Demands')
 parser.add_argument('-filter', help='MATE Live filter')
 
 args = vars(parser.parse_args())
@@ -17,5 +19,5 @@ except (ValueError,TypeError) as e:
     sys.exit(1)
 
 ml = ML(server, {'username': username, 'password': password})
-r =  ml.explore("LSPs", args['filter'], 100)
+r =  ml.explore(args['object'], args['filter'], 100)
 r.print_csv()
