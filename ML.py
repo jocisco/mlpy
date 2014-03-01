@@ -206,6 +206,16 @@ class ML:
             #print tmp
             l.append(tmp)
         return l
+    def get_plan(self, date=None):
+        from requests.auth import HTTPBasicAuth
+        headers = {'Accept' : 'application/json, text/javascript, */*'} 
+        url = self.server + "/map/api/archive/planfile"
+        r = requests.get(url, cookies=self.cookies, headers=headers, verify=False, auth=(self.credentials['username'], self.credentials['password']))
+        timestamp = r.headers['x-filename']
+        ret = { 'timestamp': timestamp, 'file-content': r.content }
+        return ret
+        #print r.content
+
  
 from urlparse import urlparse
 import sys
