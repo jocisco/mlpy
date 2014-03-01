@@ -71,7 +71,7 @@ class ML:
         url = self.server + "/matelive/api/jobs?size=1&offset=0&\
             sortDir=dec&sortProp=jobId&filters=definitionId(" + did + ")%3B"
         r = self.get(url)
-        jid = r.json["jobList"][0]["jobId"]
+        jid = r.json()["jobList"][0]["jobId"]
         return jid
 
     # get csv data
@@ -79,7 +79,7 @@ class ML:
         # get csv url
         url = self.server + "/matelive/services/reportout/" + str(jid)
         r = self.get(url)
-        csvurl = r.json["table"]["csvUrl"]
+        csvurl = r.json()["table"]["csvUrl"]
         # get csv data
         url = self.server + "/matelive/" + csvurl
         r = self.get(url)
@@ -92,7 +92,7 @@ class ML:
     def flush_myreports(self):
         url = self.server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
-        myreports = r.json["myReportList"]
+        myreports = r.json()["myReportList"]
 
         for report in myreports:
             did = report["definitionId"]
@@ -107,7 +107,7 @@ class ML:
     def flush_props(self):
         url = self.server + "/matelive/api/properties"
         r = self.get(url)
-        props = r.json["properties"]
+        props = r.json()["properties"]
 
         for prop in props:
             prop_name = prop["name"]
@@ -123,7 +123,7 @@ class ML:
         url = self.server + "/matelive/api/myreports?size=1000&offset=0&\
             sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
-        myreports = r.json["myReportList"]
+        myreports = r.json()["myReportList"]
         return myreports
 
     def my_reports_definitions(self):
@@ -133,7 +133,7 @@ class ML:
             did = report["definitionId"]
             url = self.server + "/matelive/api/definitions/" + str(did)
             r = self.get(url)
-            array.append(r.json)
+            array.append(r.json())
         return array
 
     def props(self):
@@ -141,7 +141,7 @@ class ML:
         r = self.get(url)
         r.raise_for_status()
         #props =  r.text["properties"]
-        props = r.json["properties"]
+        props = r.json()["properties"]
         return props
 
     def load_myreports_from_file(self, file):
@@ -218,12 +218,12 @@ class ML:
         r = self.get(url)
         l = MLlist()
         # preprocess the object...
-        for line in r.json['objectData']:
+        for line in r.json()['objectData']:
             i = 0
             # print line
             tmp = OrderedDict()
             # TODO: improve that code so the prop order follow user input
-            for cols in r.json['objectMeta']:
+            for cols in r.json()['objectMeta']:
                 value = line['data'][i]
                 if not properties or cols['name'] in properties:
                     tmp[cols['name']] = value

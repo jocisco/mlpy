@@ -22,10 +22,10 @@ ml = ML(server, {'username': username, 'password': password})
 
 myreports = ml.my_reports()
 
-print "-" * 98
+print "+{:s}+".format("-" * 96)
 sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\n'.format(
     "name", "did", "jid", "status", "time"))
-print "-" * 98
+print "+{:s}+".format("-" * 96)
 
 total_time = None
 for report in myreports:
@@ -43,7 +43,7 @@ for report in myreports:
         try:
             status = ml.job_status(jid)
         except:
-            print status, "<error>"
+            print "{:s} <error retrieving job status>\r".format(status)
         diff = datetime.now() - start
         sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\r'.format(
             name, did, jid, status, str(diff)))
@@ -55,10 +55,10 @@ for report in myreports:
     except:
         pass
     print
-    if total_time != None:
+    if total_time:
         total_time = total_time + diff
     else:
         total_time = diff
 
-print "-" * 98
+print "+{:s}+".format("-" * 96)
 print "total time: " + str(total_time)

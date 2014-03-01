@@ -4,8 +4,10 @@ set -x
 set -e
 
 ./dump_last_report_csv.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 32
-./dump_props.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 | tee props.txt
-./dump_myreports.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 | tee reports.txt
+./dump_props.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 > props.txt
+cat props.txt
+./dump_myreports.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 > reports.txt
+cat reports.txt
 ./explore.py https://mate:matesw@mate-nvsdemo.cisco.com:8443 LSPs -filter "ActualPath(AP_HK_BB1|ae0.0)" -properties SourceNode,ActualPath,SetupBW,Traff -count 5
 ./get_plan.py https://admin:cariden@mldev01:8443 -dir /tmp/
 
