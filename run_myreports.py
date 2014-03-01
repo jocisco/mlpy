@@ -7,9 +7,10 @@ import json
 from time import sleep
 from datetime import datetime
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument(
     'url', metavar='url', type=str, help='http[s]://username:password@server.')
+parser.add_argument('-non-interactive', help='Suitable for script output.', action='store_true', default=False)
 args = vars(parser.parse_args())
 
 try:
@@ -43,11 +44,12 @@ for report in myreports:
         try:
             status = ml.job_status(jid)
         except:
-            print "{:s} <error retrieving job status>\r".format(status)
+            sys.stdout.writewrite("{:s} <error retrieving job status>\r".format(status))
         diff = datetime.now() - start
-        sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\r'.format(
-            name, did, jid, status, str(diff)))
-        sys.stdout.flush()
+        if not args['non_interactive']:
+            sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\r'.format(
+                name, did, jid, status, str(diff)))
+            sys.stdout.flush()
     sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} | '.format(
         name, did, jid, status, str(diff)))
     try:
