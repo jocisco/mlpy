@@ -3,10 +3,7 @@
 set -x
 set -e
 
-read_server="https://mate:matesw@mate-nvsdemo.cisco.com:8443"
-write_server="https://admin:cariden@127.0.0.1:8443"
-props_file=/tmp/props.txt
-reportsdef_file=/tmp/reports.txt
+source test.rc
 
 $python ./dump_last_report_csv.py $read_server 32
 $python ./dump_props.py $read_server > $props_file; cat $props_file

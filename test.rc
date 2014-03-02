@@ -1,0 +1,4 @@
+read_server="https://mate:matesw@mate-nvsdemo.cisco.com:8443"
+write_server="https://admin:cariden@127.0.0.1:8443"
+props_file=/tmp/props.txt
+reportsdef_file=/tmp/reports.txt
