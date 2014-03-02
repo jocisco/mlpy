@@ -40,10 +40,10 @@ class ML:
         self.cookies = r.cookies
         return self.cookies
 
-    def get(self, url):
+    def get(self, url, get_params=None):
         headers = {'Accept': 'application/json, text/javascript, */*'}
         r = requests.get(url, cookies=self.cookies, headers=headers,
-                         verify=False)
+                         verify=False, params=get_params)
         return r
 
     def put(self, url, data):
@@ -208,14 +208,16 @@ class ML:
 
     def explore(self, object_type, filter=None, count=10, properties=None):
         ''' Get the list of objects.'''
+        get_params = {'size':         count,
+                      'offset':       '0',
+                      'hideInactive': 'true'
+                      }
         if filter:
-            url = self.server + "/matelive/api/objects/" + object_type + "?size=" + \
-                str(count) + "&offset=0&hideInactive=true&filter=" + \
-                str(urllib.quote(filter))
-        else:
-            url = self.server + "/matelive/api/objects/" + object_type + \
-                "?size=" + str(count) + "&offset=0&hideInactive=true"
-        r = self.get(url)
+            get_params['filter'] = filter
+
+        url = self.server + "/matelive/api/objects/" + object_type
+        r = self.get(url, get_params)
+        print r.content
         l = MLlist()
         # preprocess the object...
         for line in r.json()['objectData']:
@@ -235,15 +237,14 @@ class ML:
     def get_plan(self, date=None):
         from requests.auth import HTTPBasicAuth
         headers = {'Accept': 'application/json, text/javascript, */*'}
+        get_params = {}
         if date:
             pattern = '%y%m%d_%H%M_%Z'
             epoch = int(calendar.timegm(time.strptime(date, pattern))) * 1000
-            url = self.server + \
-                "/map/api/archive/planfile?timestamp=" + str(epoch)
-        else:
-            url = self.server + "/map/api/archive/planfile"
+            get_params['timestamp'] = str(epoch)
+        url = self.server + "/map/api/archive/planfile"
         r = requests.get(
-            url, cookies=self.cookies, headers=headers, verify=False,
+            url, cookies=self.cookies, headers=headers, verify=False, params=get_params,
             auth=(self.credentials['username'], self.credentials['password']))
         try:
             r.raise_for_status()
