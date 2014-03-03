@@ -44,7 +44,7 @@ for report in myreports:
         try:
             status = ml.job_status(jid)
         except:
-            sys.stdout.writewrite("{:s} <error retrieving job status>\r".format(status))
+            sys.stdout.write("{:s} <error retrieving job status>\r".format(status))
         diff = datetime.now() - start
         if not args['non_interactive']:
             sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\r'.format(

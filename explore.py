@@ -12,6 +12,8 @@ parser.add_argument('-filter', help='MATE Live filter')
 parser.add_argument('-properties', help='Comma-delimited list of propeties.')
 parser.add_argument('-csv', help='Display in csv mode.', action='store_true')
 parser.add_argument('-count', default=10, help='Count of objects to display.')
+parser.add_argument('-sort-property', help='Name of the property used to sort the results.')
+parser.add_argument('-sort-direction', help='Sort direction.')
 args = vars(parser.parse_args())
 
 try:
@@ -26,7 +28,7 @@ if args['properties']:
     properties = args['properties'].split(",")
 else:
     properties = None
-r = myml.explore(args['object'], args['filter'], args['count'], properties)
+r = myml.explore(args['object'], args['filter'], args['count'], properties, args['sort_property'], args['sort_direction'])
 if args['csv']:
     r.print_csv()
 else:
