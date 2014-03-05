@@ -21,7 +21,7 @@ except (ValueError, TypeError) as e:
 
 ml = ML(server, {'username': username, 'password': password})
 
-myreports = ml.my_reports()
+myreports = ml.my_reports_list()
 
 print "+{:s}+".format("-" * 96)
 sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} |\n'.format(

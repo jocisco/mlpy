@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/pytho
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # MATE Live python class
@@ -56,7 +56,7 @@ class ML:
     def post(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01',
                    'Content-Type': 'application/json'}
-        r = requests.post(url, cookies=self.cookies, data=data,
+        r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
                           headers=headers, verify=False)
         return r
 
@@ -119,7 +119,7 @@ class ML:
             print 'delete {:<50s} [{:s}]   {:s}'.\
                 format(prop_name, str(r.status_code), r.text)
 
-    def my_reports(self):
+    def my_reports_list(self):
         url = self.server + "/matelive/api/myreports?size=1000&offset=0&\
             sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
@@ -127,7 +127,7 @@ class ML:
         return myreports
 
     def my_reports_definitions(self):
-        myreports = self.my_reports()
+        myreports = self.my_reports_list()
         array = []
         for report in myreports:
             did = report["definitionId"]
@@ -154,8 +154,7 @@ class ML:
                 counter = counter + 1
                 # create the report
                 url = self.server + "/matelive/api/definitions/"
-                data = json.dumps(reportdef)
-                r = self.post(url, data)
+                r = self.post(url, reportdef)
                 print '{:<3d} {:50s} [{:s}]   {:s}'.format(counter, reportdef["name"], str(r.status_code), r.text)
                 url = self.server + "/matelive/api/definitions/" + \
                     str(reportdef["definitionId"])
@@ -182,8 +181,7 @@ class ML:
                 counter = counter + 1
                 # create the report
                 url = self.server + "/matelive/api/properties/"
-                data = json.dumps(prop)
-                r = self.post(url, data)
+                r = self.post(url, prop)
                 print '{:<3d} {:50s} [{:s}]   {:s}'.format(counter, prop["name"], str(r.status_code), r.text)
                 if r.status_code == 201:
                     # exit if error
@@ -259,6 +257,41 @@ class ML:
         ret = {'timestamp': timestamp, 'file-content': r.content}
         return ret
         # print r.content
+
+    def time_series(self, ob, prop, keys, date_from, date_to):
+        keys_names = {}
+        keys_names['Interfaces'] = ['Node', 'Name']
+        keys_names['LSPs'] = ['SourceNode', 'Name']
+        keys_names['Nodes'] = ['Node']
+
+        keys_json = []
+        for i, k in enumerate(keys):
+            keys_json.append(
+                {'name': keys_names[ob][i], 'value': keys[i]}
+            )
+
+        date_pattern = "%Y-%m-%d %H:%M:00"
+        data = {'hasRawData': True,
+                'isLive': True,
+                'objectKeys': [{'keyPairs': keys_json}],
+                'objectType': ob,
+                'properties': [{
+                    'aggregationMode': 'Last',
+                    'name': prop
+                }],
+                'reportType': 'Adhoc',
+                'timeFrom': time.strftime(date_pattern, date_from),
+                'timeTo': time.strftime(date_pattern, date_to),
+                }
+        #        'timeRangeUnits': 'day',
+        #        'timeRangeValue': '1'
+        url = self.server + "/matelive/api/jobs/live"
+        # should not be needed
+        r = self.post(url, data)
+        csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
+        url = self.server + "/" + csvurl
+        r = self.get(url)
+        return r.text
 
 
 def parse_url(url):
