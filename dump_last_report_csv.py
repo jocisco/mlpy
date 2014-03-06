@@ -12,10 +12,8 @@ import argparse
 import sys
 
 parser = argparse.ArgumentParser()
-parser.add_argument(
-    'url', metavar='url', type=str, help='http[s]://username:password@server.')
-parser.add_argument(
-    'did', metavar='did', type=str, help='Report definitionId.')
+parser.add_argument('url', metavar='url', type=str, help='http[s]://username:password@server.')
+parser.add_argument('did', metavar='did', type=str, help='Report definitionId.')
 args = vars(parser.parse_args())
 
 try:

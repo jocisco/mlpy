@@ -217,7 +217,7 @@ class ML:
 
         url = self.server + "/matelive/api/objects/" + object_type
         r = self.get(url, get_params)
-        l = MLlist()
+        l = MLTable()
 
         meta = r.json()['objectMeta']
         props_from_meta = []
@@ -227,13 +227,43 @@ class ML:
         if not properties:
             properties = props_from_meta
 
+        l['header'] = properties
+        l['rows'] = []
+
         for line in r.json()['objectData']:
-            i = 0
-            tmp = OrderedDict()
+            row = []
             for prop in properties:
-                tmp[prop] = line['data'][props_from_meta.index(prop)]
-            l.append(tmp)
+                row.append(line['data'][props_from_meta.index(prop)])
+            l['rows'].append(row)
         return l
+
+    def get_report(self, jid, columns=None, count=10):
+        url = self.server + "/matelive/services/reportout/" + str(jid)
+        get_params = {}
+        get_params['nPerPage'] = count
+        r = self.get(url, get_params)
+        res = MLTable()
+        res['header'] = r.json()['table']['headers']
+        res['rows'] = []
+        for row in r.json()['table']['rows']:
+            res['rows'].append(row)
+
+        # triming to selected columns #
+        if columns:
+            tmp = []
+            for i, v in enumerate(res['header']):
+                if i in columns:
+                    tmp.append(v)
+            res['header'] = tmp
+            rows = []
+            for row in res['rows']:
+                tmp = []
+                for i, v in enumerate(row):
+                    if i in columns:
+                        tmp.append(v)
+                rows.append(tmp)
+            res['rows'] = rows
+        return res
 
     def get_plan(self, date=None):
         from requests.auth import HTTPBasicAuth
@@ -293,6 +323,26 @@ class ML:
         r = self.get(url)
         return r.text
 
+    def traff_report(self, ob, date_from, date_to):
+        '''
+        in progress. doesn't work.
+        '''
+        keys_json = []
+        data = {'hasRawData': True,
+                'isLive': True,
+                'objectKeys': [{'keyPairs': keys_json}],
+                'objectType': ob,
+                'reportType': 'Adhoc',
+                'timeFrom': time.strftime(date_from),
+                'timeTo': time.strftime(date_to),
+                }
+        url = self.server + "/matelive/api/jobs/live"
+        r = self.post(url, data)
+        csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
+        url = self.server + "/" + csvurl
+        r = self.get(url)
+        return r.text
+
 
 def parse_url(url):
     parsed = urlparse(url)
@@ -304,86 +354,80 @@ def parse_url(url):
         new_url = parsed.scheme + "://" + parsed.hostname
     return parsed.username, parsed.password, new_url
 
-# handle list printing
 
-
-class MLlist (list):
-
+class MLTable (dict):
+    '''
+    handles list printing
+    '''
     def print_col(self):
         '''
-        print a list like that [ { key1: val1 , key2: val2 } , { key1: val3, key2: val4 } ] as
+        display this:
+            {header: [h1, h2], rows: [ [val1, val2], [val3, val4]]}
+        like that:
         +-------+------+
-        | key1  | key2 |
+        | h1    | h2   |
         +-------+------+
         | val1  | val2 |
         | val3  | val4 |
         +-------+------+
         '''
-        max_len = {}
-        errors = []
+        max_len = OrderedDict()
 
-        # determine max value lenght
-        for i in self:
-            for key, value in i.items():
-                if not key in max_len:
-                    max_len[key] = len(str(key)) + 1
-                try:
-                    if isinstance(value, list):
-                        value = "<list of objects>"
-                    if len(str(value)) > max_len[key]:
-                        max_len[key] = len(str(value)) + 1
-                except Exception, e:
-                    errors.append(str(e))
+        # determine max value length accross keys and rows values
+
+        for v in self['header']:
+            if isinstance(v, list):
+                v = "<list of objects>"
+            if v in max_len.keys():
+                if len(str(v)) > max_len[v]:
+                    max_len[v] = len(str(v)) + 1
+            else:
+                max_len[v] = len(str(v)) + 1
+
+        max_len_list = list(max_len.values())
+        for row in self['rows']:
+            for i, v in enumerate(row):
+                if isinstance(v, list):
+                    v = "<list of objects>"
+                if len(str(v)) > max_len_list[i]:
+                    max_len_list[i] = len(str(v)) + 1
 
         # print border
-        sys.stdout.write('{:s}'.format("+"))
-        for key in self[0].keys():
-            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
-        print
+        border = "+"
+        for i, v in enumerate(self['header']):
+            border = border + '{:s}{:s}'.format("-" * (max_len_list[i] + 2), "+")
+        print border
 
         # print keys as headers
-        print "|",
-        for key in self[0].keys():
-            strformat = '{:<' + str(max_len[key]) + '}'
-            print strformat.format(key), "|",
-        print
+        header = "| "
+        for i, v in enumerate(self['header']):
+            strformat = '{:<' + str(max_len_list[i] + 1) + '}'
+            header = header + strformat.format(v) + "| "
+        print header
 
         # print border
-        sys.stdout.write('{:s}'.format("+"))
-        for key in self[0].keys():
-            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
-        print
+        print border
 
         # print values
-        for i in self:
-            print "|",
-            for key, value in i.items():
-                if isinstance(value, list):
-                    value = "<list of objects>"
-                strformat = '{:<' + str(max_len[key]) + '}'
-                # print type(value)
-                try:
-                    print strformat.format(value), "|",
-                except Exception, e:
-                    errors.append(str(e))
-                    print strformat.format(""), "|",
-            print
+        for i, r in enumerate(self['rows']):
+            row = "| "
+            for i, v in enumerate(r):
+                if isinstance(v, list):
+                    v = "<list of objects>"
+                strformat = '{:<' + str(max_len_list[i] + 1) + '}'
+                row = row + strformat.format(v) + "| "
+            print row
 
         # print border
-        sys.stdout.write('{:s}'.format("+"))
-        for key in self[0].keys():
-            sys.stdout.write('{:s}{:s}'.format("-" * (max_len[key] + 2), "+"))
-        print
+        print border
 
     def print_csv(self):
-        errors = []  # should be printed
         # print keys
-        for key in self[0].keys():
-            print key, "\t",
+        for cell in self['header']:
+            print cell, "\t",
         print
-
-        for i in self:
-            for key, value in i.items():
-                print value, "\t",
+        for row in self['rows']:
+            for cell in row:
+                print cell, "\t",
             print
         print
