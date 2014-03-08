@@ -68,26 +68,34 @@ class ML:
 
     # get last job
     def last_job(self, did):
-        url = self.server + "/matelive/api/jobs?size=1&offset=0&\
-            sortDir=dec&sortProp=jobId&filters=definitionId(" + did + ")%3B"
-        r = self.get(url)
+        """
+        :param did:
+        :return: jid
+        """
+        url = self.server + "/matelive/api/jobs"
+        get_params = { 'size': 1,
+                       'offset': 0,
+                       'sortDir': 'dec',
+                       'sortProp': 'jobId',
+                       'filters': 'definitionId(' + did + ');'
+        }
+        r = self.get(url, get_params)
         jid = r.json()["jobList"][0]["jobId"]
         return jid
 
     # get csv data
-    def get_csv(self, jid):
-        # get csv url
+    def get_csv_file(self, jid):
+        get_params = {}
+        get_params['nPerPage'] = 0
         url = self.server + "/matelive/services/reportout/" + str(jid)
-        r = self.get(url)
+        r = self.get(url, get_params)
+        # get csv url
         csvurl = r.json()["table"]["csvUrl"]
         # get csv data
         url = self.server + "/matelive/" + csvurl
         r = self.get(url)
         return r.text
 
-    # get last csv data
-    def get_last_csv(self, did):
-        return self.get_csv(self.last_job(did))
 
     def flush_myreports(self):
         url = self.server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
@@ -237,10 +245,32 @@ class ML:
             l['rows'].append(row)
         return l
 
-    def get_report(self, jid, columns=None, count=10):
+    def get_report_output_filter_sort(self, jid):
+        get_params = {}
+        get_params['nPerPage'] = 0
+        url = self.server + "/matelive/services/reportout/" + str(jid)
+        r = self.get(url,get_params)
+        sorts_list = r.json().get('table').get('sorts')
+        sorts = ""
+        if sorts_list:
+            for s in sorts_list:
+                    sorts += str(s['colIndex'])+"("+ str(s['sortDir']) + ")"
+        filters = r.json().get('table').get('filters')
+        mymltable = self.get_report(jid,count=1000000,sorts=sorts,filters=filters)
+        return {'sorts': sorts, 'filters': filters}
+
+    def get_filtered_report(self, jid, columns=None, count=10):
+        r = self.get_report_output_filter_sort(jid)
+        return self.get_report(jid, None, count, r.get('sorts'), r.get('filters'))
+
+    def get_report(self, jid, columns=None, count=10, sorts=None, filters=None):
         url = self.server + "/matelive/services/reportout/" + str(jid)
         get_params = {}
         get_params['nPerPage'] = count
+        # JG on 3/11/14: I guess this is a bug, it has to be set to ""
+        get_params['filters'] = filters if filters is not None else ""
+        get_params['sort'] = sorts if sorts is not None else ""
+
         r = self.get(url, get_params)
         res = MLTable()
         res['header'] = r.json()['table']['headers']

@@ -14,6 +14,7 @@ import sys
 parser = argparse.ArgumentParser()
 parser.add_argument('url', metavar='url', type=str, help='http[s]://username:password@server.')
 parser.add_argument('did', metavar='did', type=str, help='Report definitionId.')
+parser.add_argument('-filtered', help='Use report output filters.', action='store_true')
 args = vars(parser.parse_args())
 
 try:
@@ -24,4 +25,11 @@ except (ValueError, TypeError) as e:
 
 
 ml = ML(server, {'username': username, 'password': password})
-print ml.get_last_csv(args['did'])
+filtered = args['filtered']
+
+jid = ml.last_job(args['did'])
+
+if filtered:
+    ml.get_filtered_report(jid, filtered, count=1000000).print_csv()
+else:
+    print ml.get_csv_file(jid)

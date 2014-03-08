@@ -53,7 +53,7 @@ for report in myreports:
     sys.stdout.write('| {:50s} | {:4s} | {:4s} | {:10s} | {:14s} | '.format(
         name, did, jid, status, str(diff)))
     try:
-        sys.stdout.write(str(len(ml.get_csv(jid)) / (8 * 8 * 8)) + " (KB)")
+        sys.stdout.write(str(len(ml.get_csv_file(jid)) / (8 * 8 * 8)) + " (KB)")
     except:
         pass
     print
