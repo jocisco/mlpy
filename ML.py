@@ -261,7 +261,7 @@ class ML:
 
     def get_filtered_report(self, jid, columns=None, count=10):
         r = self.get_report_output_filter_sort(jid)
-        return self.get_report(jid, None, count, r.get('sorts'), r.get('filters'))
+        return self.get_report(jid, columns, count, r.get('sorts'), r.get('filters'))
 
     def get_report(self, jid, columns=None, count=10, sorts=None, filters=None):
         url = self.server + "/matelive/services/reportout/" + str(jid)
