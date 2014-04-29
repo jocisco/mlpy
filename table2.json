@@ -1,0 +1,56 @@
+{
+    "name": "demo",
+    "display" : "demo",
+    "columnsMetaData": [
+        {
+            "name" : "name",
+            "display" : "Name",
+            "dataType" : "text",
+            "isKey" : "true",
+            "isActive" : "true",
+            "customProperties": [
+                {
+                    "name": "prop11",
+                    "value": "1"
+                },
+                {
+                    "name": "prop12",
+                    "value": "2"
+                }
+            ]
+        },
+        {
+            "name" : "col2",
+            "display" : "Col2",
+            "dataType" : "int",
+            "isKey" : "false",
+            "isActive" : "true",
+            "customProperties": [
+                {
+                    "name": "prop21",
+                    "value": "21"
+                },
+                {
+                    "name": "prop22",
+                    "value": "22"
+                }
+            ]
+        }
+    ],
+    "seriesMetaData": [
+        {
+            "name" : "tsName1",
+            "display" : "tsName1",
+            "freq" : "LF",
+            "dataType" : "int",
+            "isActive" : "false",
+            "customProperties": [
+                {
+                    "name": "ts_name1",
+                    "value": "31"
+                }
+            ]
+        }
+    ]
+}
+
