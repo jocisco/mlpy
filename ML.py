@@ -24,6 +24,7 @@ from collections import OrderedDict
 from urlparse import urlparse
 
 import requests
+import re
 
 
 class ML:
@@ -59,6 +60,19 @@ class ML:
         r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
                           headers=headers, verify=False)
         return r
+
+    def postXml(self, url, data):
+        iheaders = {'Accept': 'text/plain, */*; q=0.01',
+                   'Content-Type': 'application/xml'}
+        r = requests.post(url, cookies=self.cookies, data=data,
+                          headers=iheaders, verify=False)
+        return r
+
+    def delete(self, url):
+        headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
+        r = requests.delete(url, cookies=self.cookies, headers=headers,
+                            verify=False)
+
 
     def delete(self, url):
         headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
@@ -211,6 +225,13 @@ class ML:
         status = root.find("status").text
         return status
 
+    def scheduler_job_status(self, jid):
+        url = self.server + "/matelive/services/scheduler/jobs/" + str(jid)
+        r = self.get(url)
+        dict = json.loads(r.text)
+        status = dict['status']
+        return status
+
     def explore(self, object_type, filter=None, count=10, properties=None, sort_prop=None, sort_dir='dec'):
         ''' Get the list of objects.'''
         get_params = {'size':         count,
@@ -323,6 +344,8 @@ class ML:
         keys_names['Interfaces'] = ['Node', 'Name']
         keys_names['LSPs'] = ['SourceNode', 'Name']
         keys_names['Nodes'] = ['Node']
+	# jcyoung - temp fix to add the key for any table with 'name' as key
+        keys_names[ob] = ['name']
 
         keys_json = []
         for i, k in enumerate(keys):
@@ -373,6 +396,31 @@ class ML:
         r = self.get(url)
         return r.text
 
+    def create_table(self, file):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        url = self.server + "/matelive/api/data/newtable/"
+        if re.search('tableDefinition',data):
+            # for xml format
+            r = self.postXml(url, data)
+        else:
+	    data = json.loads(data)
+            r = self.post(url, data)
+        return r
+
+    def import_data(self, table, file):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=20130101 10:00:00"
+        r = self.post(url, data)
+        return r
+
+    def drop_table(self, table):
+        url = self.server + "/matelive/api/data/xxxdroptable/" + table
+        r = self.delete(url)
+        return r
 
 def parse_url(url):
     parsed = urlparse(url)
