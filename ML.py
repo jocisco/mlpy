@@ -418,7 +418,7 @@ class ML:
         return r
 
     def drop_table(self, table):
-        url = self.server + "/matelive/api/data/xxxdroptable/" + table
+        url = self.server + "/matelive/api/data/droptable/" + table
         r = self.delete(url)
         return r
 
