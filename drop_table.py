@@ -14,7 +14,6 @@ args = vars(parser.parse_args())
 
 try:
     (username, password, server) = parse_url(args['url'])
-    print "username, password, server = ", username, password, server
 except (ValueError, TypeError) as e:
     print "invalid url"
     sys.exit(1)

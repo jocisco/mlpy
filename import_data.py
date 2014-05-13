@@ -13,6 +13,8 @@ parser.add_argument(
     'table', metavar='table', type=str, help='The custom table to import data into.')
 parser.add_argument(
     'file', metavar='data_file', type=str, help='Custom data file to import.')
+parser.add_argument(
+    'timestamp', metavar='timestamp', type=str, help='timestamp for import.')
 args = vars(parser.parse_args())
 
 try:
@@ -22,7 +24,7 @@ except (ValueError, TypeError) as e:
     sys.exit(1)
 
 ml = ML(server, {'username': username, 'password': password})
-r = ml.import_data(args['table'],args['file'])
+r = ml.import_data(args['table'],args['file'], args['timestamp'])
 if r.status_code != 201:
     # exit if error
     print "Failed to submit the job to import data with error ", r.status_code, r.text

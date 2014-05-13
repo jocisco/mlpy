@@ -345,7 +345,12 @@ class ML:
         keys_names['LSPs'] = ['SourceNode', 'Name']
         keys_names['Nodes'] = ['Node']
 	# jcyoung - temp fix to add the key for any table with 'name' as key
-        keys_names[ob] = ['name']
+ #       keys_names[ob] = ['name']
+        keys_names['demo'] = ['name']
+        keys_names['testingName'] = ['col1']
+        keys_names['interfacesqueue56'] = ['Node','Interface']
+        keys_names['interfacesqueue'] = ['Node','Interface']
+        keys_names['QoS_Counters'] = ['Node','Interface','Queue']
 
         keys_json = []
         for i, k in enumerate(keys):
@@ -409,11 +414,11 @@ class ML:
             r = self.post(url, data)
         return r
 
-    def import_data(self, table, file):
+    def import_data(self, table, file, timestamp):
         fh = open(file, "r+")
         data = fh.read()
 
-        url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=20130101 10:00:00"
+        url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
         r = self.post(url, data)
         return r
 
