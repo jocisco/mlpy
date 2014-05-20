@@ -14,6 +14,7 @@ parser.add_argument('property', help='Property.')
 parser.add_argument('keys', help='"|" delimited list of keys.')
 parser.add_argument('from', help='from date YYMMDD_HHMM_UTC.')
 parser.add_argument('to', help='to date YYMMDD_HHMM_UTC.')
+parser.add_argument('-keyColumns', help='list of key columns using comma to separate.')
 args = vars(parser.parse_args())
 
 try:
@@ -29,6 +30,10 @@ date_pattern = '%y%m%d_%H%M_%Z'
 date_from = time.strptime(args['from'], date_pattern)
 date_to = time.strptime(args['to'], date_pattern)
 
-print myml.time_series(args['object'], args['property'], args['keys'].split("|"),
+if args['keyColumns']:
+    print myml.time_series(args['object'], args['property'], args['keys'].split("|"),
+                       date_from, date_to, args['keyColumns'].split(","))
+else:
+    print myml.time_series(args['object'], args['property'], args['keys'].split("|"),
                        date_from, date_to)
 #print myml.time_series("Interfaces", "TraffIn", ["AM_LA_BB2", "TenGigE0/2/2"])

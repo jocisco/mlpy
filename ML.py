@@ -339,24 +339,21 @@ class ML:
         return ret
         # print r.content
 
-    def time_series(self, ob, prop, keys, date_from, date_to):
+    def time_series(self, ob, prop, keys, date_from, date_to, keyColumns=None):
         keys_names = {}
         keys_names['Interfaces'] = ['Node', 'Name']
         keys_names['LSPs'] = ['SourceNode', 'Name']
         keys_names['Nodes'] = ['Node']
-	# jcyoung - temp fix to add the key for any table with 'name' as key
- #       keys_names[ob] = ['name']
-        keys_names['demo'] = ['name']
-        keys_names['testingName'] = ['col1']
-        keys_names['interfacesqueue56'] = ['Node','Interface']
-        keys_names['interfacesqueue'] = ['Node','Interface']
-        keys_names['QoS_Counters'] = ['Node','Interface','Queue']
+
+	if keyColumns!=None:
+            keys_names[ob] = keyColumns
 
         keys_json = []
         for i, k in enumerate(keys):
             keys_json.append(
                 {'name': keys_names[ob][i], 'value': keys[i]}
             )
+
 
         date_pattern = "%Y-%m-%d %H:%M:00"
         data = {'hasRawData': True,
