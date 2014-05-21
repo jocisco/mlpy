@@ -14,7 +14,7 @@ parser.add_argument(
 parser.add_argument(
     'file', metavar='data_file', type=str, help='Custom data file to import.')
 parser.add_argument(
-    'timestamp', metavar='timestamp', type=str, help='timestamp for import.')
+    '-timestamp', metavar='timestamp', type=str, help='timestamp for import.')
 args = vars(parser.parse_args())
 
 try:
