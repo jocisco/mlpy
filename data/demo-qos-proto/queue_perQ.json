@@ -1,6 +1,6 @@
 {
-    "name": "QoS_Counters",
-    "display" : "QoS_Counters",
+    "name": "InterfaceQueues",
+    "display" : "Interface Queues",
     "columnsMetaData": [
         {
             "name" : "node",

@@ -72,12 +72,6 @@ class ML:
         headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
         r = requests.delete(url, cookies=self.cookies, headers=headers,
                             verify=False)
-
-
-    def delete(self, url):
-        headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
-        r = requests.delete(url, cookies=self.cookies, headers=headers,
-                            verify=False)
         return r
 
     # get last job
@@ -266,6 +260,23 @@ class ML:
             l['rows'].append(row)
         return l
 
+    # get keys of a specific objects
+    def keys(self, object_type):
+        ''' Get the list of objects.'''
+        get_params = {'size': '1'}
+
+        url = self.server + "/matelive/api/objects/" + object_type
+        r = self.get(url, get_params)
+        l = MLTable()
+
+        meta = r.json()['objectMeta']
+        keys = []
+        for p in meta:
+            if p['isKey'] == True:
+                keys.append(p['name'])
+        return keys
+
+
     def get_report_output_filter_sort(self, jid):
         get_params = {}
         get_params['nPerPage'] = 0
@@ -341,10 +352,8 @@ class ML:
 
     def time_series(self, ob, prop, keys, date_from, date_to, keyColumns=None):
         keys_names = {}
-        keys_names['Interfaces'] = ['Node', 'Name']
-        keys_names['LSPs'] = ['SourceNode', 'Name']
-        keys_names['Nodes'] = ['Node']
-
+        keys_names[ob] = self.keys(ob)
+        
 	if keyColumns!=None:
             keys_names[ob] = keyColumns
 
@@ -415,7 +424,11 @@ class ML:
         fh = open(file, "r+")
         data = fh.read()
 
-        url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
+        if timestamp:
+            url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
+        else:
+            url = self.server + "/matelive/api/data/" + table + "?file=" + file 
+
         r = self.post(url, data)
         return r
 
