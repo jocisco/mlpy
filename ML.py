@@ -24,6 +24,7 @@ from collections import OrderedDict
 from urlparse import urlparse
 
 import requests
+import re
 
 
 class ML:
@@ -58,6 +59,13 @@ class ML:
                    'Content-Type': 'application/json'}
         r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
                           headers=headers, verify=False)
+        return r
+
+    def postXml(self, url, data):
+        iheaders = {'Accept': 'text/plain, */*; q=0.01',
+                   'Content-Type': 'application/xml'}
+        r = requests.post(url, cookies=self.cookies, data=data,
+                          headers=iheaders, verify=False)
         return r
 
     def delete(self, url):
@@ -211,6 +219,13 @@ class ML:
         status = root.find("status").text
         return status
 
+    def scheduler_job_status(self, jid):
+        url = self.server + "/matelive/services/scheduler/jobs/" + str(jid)
+        r = self.get(url)
+        dict = json.loads(r.text)
+        status = dict['status']
+        return status
+
     def explore(self, object_type, filter=None, count=10, properties=None, sort_prop=None, sort_dir='dec'):
         ''' Get the list of objects.'''
         get_params = {'size':         count,
@@ -244,6 +259,23 @@ class ML:
                 row.append(line['data'][props_from_meta.index(prop)])
             l['rows'].append(row)
         return l
+
+    # get keys of a specific objects
+    def keys(self, object_type):
+        ''' Get the list of objects.'''
+        get_params = {'size': '1'}
+
+        url = self.server + "/matelive/api/objects/" + object_type
+        r = self.get(url, get_params)
+        l = MLTable()
+
+        meta = r.json()['objectMeta']
+        keys = []
+        for p in meta:
+            if p['isKey'] == True:
+                keys.append(p['name'])
+        return keys
+
 
     def get_report_output_filter_sort(self, jid):
         get_params = {}
@@ -318,17 +350,19 @@ class ML:
         return ret
         # print r.content
 
-    def time_series(self, ob, prop, keys, date_from, date_to):
+    def time_series(self, ob, prop, keys, date_from, date_to, keyColumns=None):
         keys_names = {}
-        keys_names['Interfaces'] = ['Node', 'Name']
-        keys_names['LSPs'] = ['SourceNode', 'Name']
-        keys_names['Nodes'] = ['Node']
+        keys_names[ob] = self.keys(ob)
+        
+	if keyColumns!=None:
+            keys_names[ob] = keyColumns
 
         keys_json = []
         for i, k in enumerate(keys):
             keys_json.append(
                 {'name': keys_names[ob][i], 'value': keys[i]}
             )
+
 
         date_pattern = "%Y-%m-%d %H:%M:00"
         data = {'hasRawData': True,
@@ -373,6 +407,35 @@ class ML:
         r = self.get(url)
         return r.text
 
+    def create_table(self, file):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        url = self.server + "/matelive/api/data/newtable/"
+        if re.search('tableDefinition',data):
+            # for xml format
+            r = self.postXml(url, data)
+        else:
+	    data = json.loads(data)
+            r = self.post(url, data)
+        return r
+
+    def import_data(self, table, file, timestamp):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        if timestamp:
+            url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
+        else:
+            url = self.server + "/matelive/api/data/" + table + "?file=" + file 
+
+        r = self.post(url, data)
+        return r
+
+    def drop_table(self, table):
+        url = self.server + "/matelive/api/data/droptable/" + table
+        r = self.delete(url)
+        return r
 
 def parse_url(url):
     parsed = urlparse(url)

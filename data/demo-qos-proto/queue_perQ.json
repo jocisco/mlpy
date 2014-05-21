@@ -1,0 +1,72 @@
+{
+    "name": "InterfaceQueues",
+    "display" : "Interface Queues",
+    "columnsMetaData": [
+        {
+            "name" : "node",
+            "display" : "Node",
+            "dataType" : "text",
+            "isKey" : "true",
+            "isActive" : "true"
+        },
+        {
+            "name" : "interface",
+            "display" : "Interface",
+            "dataType" : "text",
+            "isKey" : "true",
+            "isActive" : "true"
+        },
+        {
+            "name" : "queue",
+            "display" : "Queue",
+            "dataType" : "text",
+            "isKey" : "true",
+            "isActive" : "true"
+        }
+    ],
+    "seriesMetaData": [
+        {
+            "name" : "TraffOut",
+            "display" : "TraffOut",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "TraffIn",
+            "display" : "TraffIn",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "PacketsOut",
+            "display" : "PacketsOut",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "PacketsIn",
+            "display" : "PacketsIn",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "ErrorsPacketsIn",
+            "display" : "ErrorsPacketsIn",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "DroppedPacketsOut",
+            "display" : "DroppedPacketsOut",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        }
+    ]
+}
+

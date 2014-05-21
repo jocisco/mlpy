@@ -1,0 +1,47 @@
+<tableDefinition>
+   <display>MPLS_COS</display>
+   <name>MPLS_COS1</name>
+   <columnsMetaData>
+         <name>name</name>
+         <display>Name</display>
+         <dataType>text</dataType>
+         <isActive>true</isActive>
+         <isKey>true</isKey>
+         <customProperties>
+               <name>allowNull</name>
+               <value>false</value>
+               <name>unique</name>
+               <value>true</value>
+         </customProperties>
+         <name>cosValue</name>
+         <display>"CoS Value"</display>
+         <dataType>text</dataType>
+         <isActive>true</isActive>
+         <isKey>false</isKey>
+   </columnsMetaData>
+   <seriesMetaData>
+         <name>jitter</name>
+         <display>Jitter Delay</display>
+         <dataType>int</dataType>
+         <isActive>false</isActive>
+         <freq>HF</freq>
+         <customProperties>
+               <name>checkZero</name>
+               <value>true</value>
+         </customProperties>
+         <name>latency</name>
+         <display>Latency</display>
+         <dataType>int</dataType>
+         <isActive>false</isActive>
+         <freq>LF</freq>
+         <customProperties>
+               <name>allowNull</name>
+               <value>true</value>
+         </customProperties>
+         <name>packet_loss</name>
+         <display>Packet Loss</display>
+         <dataType>int</dataType>
+         <isActive>false</isActive>
+         <freq>HF</freq>
+   </seriesMetaData>
+</tableDefinition>
