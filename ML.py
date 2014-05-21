@@ -68,6 +68,19 @@ class ML:
                           headers=iheaders, verify=False)
         return r
 
+    def postMultipart(self, url, fields, files):
+        content_type, body = self.encode_multipart_formdata(fields, files)
+        headers = {
+                   'Content-Type': content_type}
+
+        print 'url=', url
+        print 'body=', body
+        print 'end of body'
+        r = requests.post(url, cookies=self.cookies, data=body,
+                          headers=headers, verify=False)
+        return r
+
+
     def delete(self, url):
         headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
         r = requests.delete(url, cookies=self.cookies, headers=headers,
@@ -422,20 +435,50 @@ class ML:
 
     def import_data(self, table, file, timestamp):
         fh = open(file, "r+")
-        data = fh.read()
+        file_content = fh.read()
 
+        url = self.server + "/matelive/api/data/" + table
         if timestamp:
-            url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
+	    fields = [('time',timestamp)]
         else:
-            url = self.server + "/matelive/api/data/" + table + "?file=" + file 
+	    fields = [('time','')]
 
-        r = self.post(url, data)
+	files = [('attachment',file,file_content)]
+    
+	r = self.postMultipart(url, fields, files)
         return r
 
     def drop_table(self, table):
         url = self.server + "/matelive/api/data/droptable/" + table
         r = self.delete(url)
         return r
+
+
+    def encode_multipart_formdata(self, fields, files): 
+        """
+        fields is a sequence of (name, value) elements for regular form fields.
+        files is a sequence of (name, filename, value) elements for data to be uploaded as files
+        Return (content_type, body) ready for httplib.HTTP instance
+        """
+        BOUNDARY = '----------bound@ry_$'
+        CRLF = '\r\n'
+        L = []
+        for (key, value) in fields:
+            L.append('--' + BOUNDARY)
+            L.append('Content-Disposition: form-data; name="%s"' % key)
+            L.append('')
+            L.append(value)
+        for (key, filename, value) in files:
+            L.append('--' + BOUNDARY)
+            L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+            L.append('Content-Type: text/plain')
+            L.append('')
+            L.append(value)
+        L.append('--' + BOUNDARY + '--')
+        L.append('')
+        body = CRLF.join(L)
+        content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+        return content_type, body
 
 def parse_url(url):
     parsed = urlparse(url)
