@@ -35,37 +35,82 @@ class ML:
         self.cookies = self.login(credentials)
 
     def login(self, credentials):
-        r = requests.post(self.server + "/matelive/services/auth/login",
-                          data=credentials, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(self.server + "/matelive/services/auth/login",
+                                data=credentials, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         r.raise_for_status()
         self.cookies = r.cookies
         return self.cookies
 
     def get(self, url, get_params=None):
         headers = {'Accept': 'application/json, text/javascript, */*'}
-        r = requests.get(url, cookies=self.cookies, headers=headers,
-                         verify=False, params=get_params)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.get(url, cookies=self.cookies, headers=headers,
+                                verify=False, params=get_params)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def put(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01', 'Content-Type':
                    'application/json'}
-        r = requests.put(url, cookies=self.cookies, data=json.dumps(data),
-                         headers=headers, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.put(url, cookies=self.cookies, data=json.dumps(data),
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def post(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01',
                    'Content-Type': 'application/json'}
-        r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
-                          headers=headers, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def postXml(self, url, data):
         iheaders = {'Accept': 'text/plain, */*; q=0.01',
                    'Content-Type': 'application/xml'}
-        r = requests.post(url, cookies=self.cookies, data=data,
-                          headers=iheaders, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=data,
+                                headers=iheaders, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def postMultipart(self, url, fields, files):
@@ -76,15 +121,33 @@ class ML:
         print 'url=', url
         print 'body=', body
         print 'end of body'
-        r = requests.post(url, cookies=self.cookies, data=body,
-                          headers=headers, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=body,
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
 
     def delete(self, url):
         headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
-        r = requests.delete(url, cookies=self.cookies, headers=headers,
-                            verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.delete(url, cookies=self.cookies, headers=headers,
+                                    verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     # get last job
