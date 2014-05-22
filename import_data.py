@@ -40,5 +40,5 @@ else:
 	    break
  	else:
 	    i += 1
-	    time.sleep(5)
+	    time.sleep(2)
     print "job status from data import is ", status 

@@ -35,43 +35,120 @@ class ML:
         self.cookies = self.login(credentials)
 
     def login(self, credentials):
-        r = requests.post(self.server + "/matelive/services/auth/login",
-                          data=credentials, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(self.server + "/matelive/services/auth/login",
+                                data=credentials, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         r.raise_for_status()
         self.cookies = r.cookies
         return self.cookies
 
     def get(self, url, get_params=None):
         headers = {'Accept': 'application/json, text/javascript, */*'}
-        r = requests.get(url, cookies=self.cookies, headers=headers,
-                         verify=False, params=get_params)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.get(url, cookies=self.cookies, headers=headers,
+                                verify=False, params=get_params)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def put(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01', 'Content-Type':
                    'application/json'}
-        r = requests.put(url, cookies=self.cookies, data=json.dumps(data),
-                         headers=headers, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.put(url, cookies=self.cookies, data=json.dumps(data),
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def post(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01',
                    'Content-Type': 'application/json'}
-        r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
-                          headers=headers, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     def postXml(self, url, data):
         iheaders = {'Accept': 'text/plain, */*; q=0.01',
                    'Content-Type': 'application/xml'}
-        r = requests.post(url, cookies=self.cookies, data=data,
-                          headers=iheaders, verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=data,
+                                headers=iheaders, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
+
+    def postMultipart(self, url, fields, files):
+        content_type, body = self.encode_multipart_formdata(fields, files)
+        headers = {
+                   'Content-Type': content_type}
+
+        #print 'url=', url
+        #print 'body=', body
+        #print 'end of body'
+
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.post(url, cookies=self.cookies, data=body,
+                                headers=headers, verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
+        return r
+
 
     def delete(self, url):
         headers = {'Accept': '*/*', 'Accept-Encoding': 'gzip,deflate,sdch'}
-        r = requests.delete(url, cookies=self.cookies, headers=headers,
-                            verify=False)
+        # dirty way to retry on SSLErrors
+        # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
+        succeeded = False
+        while not succeeded:
+            try:
+                r = requests.delete(url, cookies=self.cookies, headers=headers,
+                                    verify=False)
+                succeeded = True
+            except (requests.exceptions.SSLError) as e:
+                print "Caught an SSL error. Retrying..."
+                pass
         return r
 
     # get last job
@@ -422,19 +499,67 @@ class ML:
 
     def import_data(self, table, file, timestamp):
         fh = open(file, "r+")
-        data = fh.read()
+        file_content = fh.read()
 
+        url = self.server + "/matelive/api/data/" + table
         if timestamp:
-            url = self.server + "/matelive/api/data/" + table + "?file=" + file + "&time=" + timestamp
+	    fields = [('time',timestamp)]
         else:
-            url = self.server + "/matelive/api/data/" + table + "?file=" + file 
+	    fields = [('time','')]
 
-        r = self.post(url, data)
+	files = [('attachment',file,file_content)]
+    
+	r = self.postMultipart(url, fields, files)
         return r
 
     def drop_table(self, table):
         url = self.server + "/matelive/api/data/droptable/" + table
         r = self.delete(url)
+        return r
+
+
+    def encode_multipart_formdata(self, fields, files): 
+        """
+        fields is a sequence of (name, value) elements for regular form fields.
+        files is a sequence of (name, filename, value) elements for data to be uploaded as files
+        Return (content_type, body) ready for httplib.HTTP instance
+        """
+        BOUNDARY = '----------bound@ry_$'
+        CRLF = '\r\n'
+        L = []
+        for (key, value) in fields:
+            L.append('--' + BOUNDARY)
+            L.append('Content-Disposition: form-data; name="%s"' % key)
+            L.append('')
+            L.append(value)
+        for (key, filename, value) in files:
+            L.append('--' + BOUNDARY)
+            L.append('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename))
+            L.append('Content-Type: text/plain')
+            L.append('')
+            L.append(value)
+        L.append('--' + BOUNDARY + '--')
+        L.append('')
+        body = CRLF.join(L)
+        content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
+        return content_type, body
+
+    def add_columns(self, table, file):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        url = self.server + "/matelive/api/data/" + table + "/update?file=" + file
+        if re.search('tableDefinition',data):
+            # for xml format
+            r = self.postXml(url, data)
+        else:
+	    data = json.loads(data)
+            r = self.post(url, data)
+        return r
+
+    def update_column(self, table, column, activeFlag):
+        url = self.server + "/matelive/api/data/" + table + "/" + column + "/status/" + activeFlag
+        r = self.put(url, '')
         return r
 
 def parse_url(url):
