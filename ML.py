@@ -118,9 +118,10 @@ class ML:
         headers = {
                    'Content-Type': content_type}
 
-        print 'url=', url
-        print 'body=', body
-        print 'end of body'
+        #print 'url=', url
+        #print 'body=', body
+        #print 'end of body'
+
         # dirty way to retry on SSLErrors
         # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
         succeeded = False
