@@ -544,6 +544,24 @@ class ML:
         content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
         return content_type, body
 
+    def add_columns(self, table, file):
+        fh = open(file, "r+")
+        data = fh.read()
+
+        url = self.server + "/matelive/api/data/" + table + "/update?file=" + file
+        if re.search('tableDefinition',data):
+            # for xml format
+            r = self.postXml(url, data)
+        else:
+	    data = json.loads(data)
+            r = self.post(url, data)
+        return r
+
+    def update_column(self, table, column, activeFlag):
+        url = self.server + "/matelive/api/data/" + table + "/" + column + "/status/" + activeFlag
+        r = self.put(url, '')
+        return r
+
 def parse_url(url):
     parsed = urlparse(url)
     new_url = None

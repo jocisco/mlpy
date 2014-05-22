@@ -1,0 +1,20 @@
+<tableDefinition>
+   <seriesMetaData>
+         <name>tsName4</name>
+         <display>tsName4</display>
+         <dataType>int</dataType>
+         <isVisible>true</isVisible>
+         <freq>LF</freq>
+         <customProperties>
+               <name>allowNull</name>
+               <value>true</value>
+         </customProperties>
+   </seriesMetaData>
+   <seriesMetaData>
+         <name>tsName5</name>
+         <display>tsName5</display>
+         <dataType>int</dataType>
+         <isVisible>true</isVisible>
+         <freq>HF</freq>
+   </seriesMetaData>
+</tableDefinition>
