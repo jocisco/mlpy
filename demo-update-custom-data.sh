@@ -17,14 +17,17 @@ $python ./import_data.py $write_server demo data/demo-update-custom-data/data_im
 # explore
 $python ./explore.py $write_server demo
 # add new series columns in existing custom table with xml
+read -p "Press [Enter] key to add time-series column(s)..."
 $python ./add_columns.py $write_server demo data/demo-update-custom-data/update_table.xml
 # import data for new series columns
 $python ./import_data.py $write_server demo data/demo-update-custom-data/data_import_new_series.txt
 # explore
 $python ./explore.py $write_server demo 
-# activate/inactivate existing column 
+# activate/inactivate existing column
+read -p "Press [Enter] key to activate or inactivate an existing column..." 
 $python ./update_column.py $write_server demo tsName5 false
 # explore
 $python ./explore.py $write_server demo 
 # drop a table
+read -p "Press [Enter] key to delete the table..."
 $python ./drop_table.py $write_server demo
