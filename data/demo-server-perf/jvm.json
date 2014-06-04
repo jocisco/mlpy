@@ -1,0 +1,12 @@
+{
+    "seriesMetaData": [
+        {
+            "name" : "jvm",
+            "display" : "JVM mem %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        }
+    ]
+}
+

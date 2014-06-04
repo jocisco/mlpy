@@ -1,0 +1,12 @@
+{
+    "seriesMetaData": [
+        {
+            "name" : "jdbconn",
+            "display" : "JDBC conection",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        }
+    ]
+}
+

@@ -1,0 +1,44 @@
+{
+    "name": "ServerPerf",
+    "display" : "ServerPerf",
+    "columnsMetaData": [
+        {
+            "name" : "server",
+            "display" : "Server",
+            "dataType" : "text",
+            "isKey" : "true",
+            "isActive" : "true"
+        }
+    ],
+    "seriesMetaData": [
+        {
+            "name" : "sda1",
+            "display" : "sda1 %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "sdb1",
+            "display" : "sdb1 %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "mem",
+            "display" : "Mem %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        },
+        {
+            "name" : "cpu",
+            "display" : "CPU %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        }
+    ]
+}
+

@@ -1,0 +1,12 @@
+{
+    "seriesMetaData": [
+        {
+            "name" : "dsmem",
+            "display" : "Datastore Mem %",
+            "freq" : "HF",
+            "dataType" : "real",
+            "isActive" : "true"
+        }
+    ]
+}
+
