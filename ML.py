@@ -30,9 +30,9 @@ import re
 class ML:
 
     def __init__(self, server, credentials):
-        self.credentials = credentials
-        self.server = server
-        self.cookies = self.login(credentials)
+        self._credentials = credentials
+        self._server = server
+        self._cookies = self.login(credentials)
 
     def login(self, credentials):
         # dirty way to retry on SSLErrors
@@ -40,15 +40,15 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.post(self.server + "/matelive/services/auth/login",
+                r = requests.post(self._server + "/matelive/services/auth/login",
                                 data=credentials, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
                 pass
         r.raise_for_status()
-        self.cookies = r.cookies
-        return self.cookies
+        self._cookies = r.cookies
+        return self._cookies
 
     def get(self, url, get_params=None):
         headers = {'Accept': 'application/json, text/javascript, */*'}
@@ -57,7 +57,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.get(url, cookies=self.cookies, headers=headers,
+                r = requests.get(url, cookies=self._cookies, headers=headers,
                                 verify=False, params=get_params)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -73,7 +73,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.put(url, cookies=self.cookies, data=json.dumps(data),
+                r = requests.put(url, cookies=self._cookies, data=json.dumps(data),
                                 headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -89,7 +89,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.post(url, cookies=self.cookies, data=json.dumps(data),
+                r = requests.post(url, cookies=self._cookies, data=json.dumps(data),
                                 headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -105,7 +105,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.post(url, cookies=self.cookies, data=data,
+                r = requests.post(url, cookies=self._cookies, data=data,
                                 headers=iheaders, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -127,7 +127,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.post(url, cookies=self.cookies, data=body,
+                r = requests.post(url, cookies=self._cookies, data=body,
                                 headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -143,7 +143,7 @@ class ML:
         succeeded = False
         while not succeeded:
             try:
-                r = requests.delete(url, cookies=self.cookies, headers=headers,
+                r = requests.delete(url, cookies=self._cookies, headers=headers,
                                     verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
@@ -157,7 +157,7 @@ class ML:
         :param did:
         :return: jid
         """
-        url = self.server + "/matelive/api/jobs"
+        url = self._server + "/matelive/api/jobs"
         get_params = { 'size': 1,
                        'offset': 0,
                        'sortDir': 'dec',
@@ -172,24 +172,24 @@ class ML:
     def get_csv_file(self, jid):
         get_params = {}
         get_params['nPerPage'] = 0
-        url = self.server + "/matelive/services/reportout/" + str(jid)
+        url = self._server + "/matelive/services/reportout/" + str(jid)
         r = self.get(url, get_params)
         # get csv url
         csvurl = r.json()["table"]["csvUrl"]
         # get csv data
-        url = self.server + "/matelive/" + csvurl
+        url = self._server + "/matelive/" + csvurl
         r = self.get(url)
         return r.text
 
 
     def flush_myreports(self):
-        url = self.server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
+        url = self._server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
         myreports = r.json()["myReportList"]
 
         for report in myreports:
             did = report["definitionId"]
-            url = self.server + "/matelive/api/definitions/" + str(did)
+            url = self._server + "/matelive/api/definitions/" + str(did)
             data = {'isMyReport': 'false'}
             r = self.put(url, data)
             # exit if error
@@ -198,13 +198,13 @@ class ML:
                 format(report["definitionName"], str(r.status_code), r.text)
 
     def flush_props(self):
-        url = self.server + "/matelive/api/properties"
+        url = self._server + "/matelive/api/properties"
         r = self.get(url)
         props = r.json()["properties"]
 
         for prop in props:
             prop_name = prop["name"]
-            url = self.server + "/matelive/api/properties/" + \
+            url = self._server + "/matelive/api/properties/" + \
                 str(prop["objectType"]) + "/" + str(prop_name)
             r = self.delete(url)
             # exit if error
@@ -213,7 +213,7 @@ class ML:
                 format(prop_name, str(r.status_code), r.text)
 
     def my_reports_list(self):
-        url = self.server + "/matelive/api/myreports?size=1000&offset=0&\
+        url = self._server + "/matelive/api/myreports?size=1000&offset=0&\
             sortDir=dec&sortProp=definitionId&filters="
         r = self.get(url)
         myreports = r.json()["myReportList"]
@@ -224,13 +224,13 @@ class ML:
         array = []
         for report in myreports:
             did = report["definitionId"]
-            url = self.server + "/matelive/api/definitions/" + str(did)
+            url = self._server + "/matelive/api/definitions/" + str(did)
             r = self.get(url)
             array.append(r.json())
         return array
 
     def props(self):
-        url = self.server + "/matelive/api/properties"
+        url = self._server + "/matelive/api/properties"
         r = self.get(url)
         r.raise_for_status()
         props = r.json()["properties"]
@@ -246,15 +246,15 @@ class ML:
             for reportdef in reports:
                 counter = counter + 1
                 # create the report
-                url = self.server + "/matelive/api/definitions/"
+                url = self._server + "/matelive/api/definitions/"
                 r = self.post(url, reportdef)
                 print '{:<3d} {:50s} [{:s}]   {:s}'.format(counter, reportdef["name"], str(r.status_code), r.text)
-                url = self.server + "/matelive/api/definitions/" + \
+                url = self._server + "/matelive/api/definitions/" + \
                     str(reportdef["definitionId"])
                 # set isMyReport to true in case the report existed
                 if r.status_code == 201:
                     did = r.text
-                    url = self.server + "/matelive/api/definitions/" + str(did)
+                    url = self._server + "/matelive/api/definitions/" + str(did)
                     data = {'isMyReport': 'true'}
                     r = self.put(url, data)
                     # exit if error
@@ -273,7 +273,7 @@ class ML:
             for prop in props:
                 counter = counter + 1
                 # create the report
-                url = self.server + "/matelive/api/properties/"
+                url = self._server + "/matelive/api/properties/"
                 r = self.post(url, prop)
                 print '{:<3d} {:50s} [{:s}]   {:s}'.format(counter, prop["name"], str(r.status_code), r.text)
                 if r.status_code == 201:
@@ -283,21 +283,21 @@ class ML:
         print str(success) + "/" + str(counter) + " loaded successfully."
 
     def run_report(self, did):
-        url = self.server + "/matelive/runReport?&outputXml&bg&mid=" + str(did)
+        url = self._server + "/matelive/runReport?&outputXml&bg&mid=" + str(did)
         r = self.get(url)
         root = ET.fromstring(r.text)
         jid = root.find("jid").text
         return jid
 
     def job_status(self, jid):
-        url = self.server + "/matelive/reportStatus?jid=" + str(jid)
+        url = self._server + "/matelive/reportStatus?jid=" + str(jid)
         r = self.get(url)
         root = ET.fromstring(r.text)
         status = root.find("status").text
         return status
 
     def scheduler_job_status(self, jid):
-        url = self.server + "/matelive/services/scheduler/jobs/" + str(jid)
+        url = self._server + "/matelive/services/scheduler/jobs/" + str(jid)
         r = self.get(url)
         dict = json.loads(r.text)
         status = dict['status']
@@ -315,7 +315,7 @@ class ML:
             get_params['sortProp'] = sort_prop
             get_params['sortDir'] = sort_dir
 
-        url = self.server + "/matelive/api/objects/" + object_type
+        url = self._server + "/matelive/api/objects/" + object_type
         r = self.get(url, get_params)
         l = MLTable()
 
@@ -342,7 +342,7 @@ class ML:
         ''' Get the list of objects.'''
         get_params = {'size': '1'}
 
-        url = self.server + "/matelive/api/objects/" + object_type
+        url = self._server + "/matelive/api/objects/" + object_type
         r = self.get(url, get_params)
         l = MLTable()
 
@@ -357,7 +357,7 @@ class ML:
     def get_report_output_filter_sort(self, jid):
         get_params = {}
         get_params['nPerPage'] = 0
-        url = self.server + "/matelive/services/reportout/" + str(jid)
+        url = self._server + "/matelive/services/reportout/" + str(jid)
         r = self.get(url,get_params)
         sorts_list = r.json().get('table').get('sorts')
         sorts = ""
@@ -373,7 +373,7 @@ class ML:
         return self.get_report(jid, columns, count, r.get('sorts'), r.get('filters'))
 
     def get_report(self, jid, columns=None, count=10, sorts=None, filters=None):
-        url = self.server + "/matelive/services/reportout/" + str(jid)
+        url = self._server + "/matelive/services/reportout/" + str(jid)
         get_params = {}
         get_params['nPerPage'] = count
         # JG on 3/11/14: I guess this is a bug, it has to be set to ""
@@ -412,11 +412,11 @@ class ML:
             pattern = '%y%m%d_%H%M_%Z'
             epoch = int(calendar.timegm(time.strptime(date, pattern))) * 1000
             get_params['timestamp'] = str(epoch)
-        url = self.server + "/map/api/archive/planfile"
+        url = self._server + "/map/api/archive/planfile"
         # Can't use self.get because the cookie-based auth doesn't seem to work
         r = requests.get(
-            url, cookies=self.cookies, headers=headers, verify=False, params=get_params,
-            auth=(self.credentials['username'], self.credentials['password']))
+            url, cookies=self._cookies, headers=headers, verify=False, params=get_params,
+            auth=(self._credentials['username'], self._credentials['password']))
         try:
             r.raise_for_status()
         except Exception, e:
@@ -456,11 +456,11 @@ class ML:
                 }
         #        'timeRangeUnits': 'day',
         #        'timeRangeValue': '1'
-        url = self.server + "/matelive/api/jobs/live"
+        url = self._server + "/matelive/api/jobs/live"
         # should not be needed
         r = self.post(url, data)
         csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
-        url = self.server + "/" + csvurl
+        url = self._server + "/" + csvurl
         r = self.get(url)
         return r.text
 
@@ -477,10 +477,10 @@ class ML:
                 'timeFrom': time.strftime(date_from),
                 'timeTo': time.strftime(date_to),
                 }
-        url = self.server + "/matelive/api/jobs/live"
+        url = self._server + "/matelive/api/jobs/live"
         r = self.post(url, data)
         csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
-        url = self.server + "/" + csvurl
+        url = self._server + "/" + csvurl
         r = self.get(url)
         return r.text
 
@@ -488,7 +488,7 @@ class ML:
         fh = open(file, "r+")
         data = fh.read()
 
-        url = self.server + "/matelive/api/data/newtable/"
+        url = self._server + "/matelive/api/data/newtable/"
         if re.search('tableDefinition',data):
             # for xml format
             r = self.postXml(url, data)
@@ -501,7 +501,7 @@ class ML:
         fh = open(file, "r+")
         file_content = fh.read()
 
-        url = self.server + "/matelive/api/data/" + table
+        url = self._server + "/matelive/api/data/" + table
         if timestamp:
 	    fields = [('time',timestamp)]
         else:
@@ -513,7 +513,7 @@ class ML:
         return r
 
     def drop_table(self, table):
-        url = self.server + "/matelive/api/data/droptable/" + table
+        url = self._server + "/matelive/api/data/droptable/" + table
         r = self.delete(url)
         return r
 
@@ -548,7 +548,7 @@ class ML:
         fh = open(file, "r+")
         data = fh.read()
 
-        url = self.server + "/matelive/api/data/" + table + "/update?file=" + file
+        url = self._server + "/matelive/api/data/" + table + "/update?file=" + file
         if re.search('tableDefinition',data):
             # for xml format
             r = self.postXml(url, data)
@@ -558,7 +558,7 @@ class ML:
         return r
 
     def update_column(self, table, column, activeFlag):
-        url = self.server + "/matelive/api/data/" + table + "/" + column + "/status/" + activeFlag
+        url = self._server + "/matelive/api/data/" + table + "/" + column + "/status/" + activeFlag
         r = self.put(url, '')
         return r
 
