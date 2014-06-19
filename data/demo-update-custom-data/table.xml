@@ -10,8 +10,8 @@
          <customProperties>
                <name>allowNull</name>
                <value>false</value>
-               </customProperties>
-               <customProperties>
+		</customProperties>
+		<customProperties>
                <name>unique</name>
                <value>true</value>
          </customProperties>
