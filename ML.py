@@ -4,7 +4,7 @@
 # MATE Live python class
 #
 # History:
-#  - 02/20/2014     Jonathan Garzon     Initial version (proof of concept)
+# - 02/20/2014     Jonathan Garzon     Initial version (proof of concept)
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
 # Example code:
@@ -17,19 +17,17 @@
 import calendar
 import json
 import time
-import urllib
-import sys
+#import urllib
+#import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from urlparse import urlparse
 
 import requests
 import re
-from pprint import pprint
 
 
 class ML:
-
     def __init__(self, server, credentials):
         self._credentials = credentials
         self._server = server
@@ -42,7 +40,7 @@ class ML:
         while not succeeded:
             try:
                 r = requests.post(self._server + "/matelive/services/auth/login",
-                                data=credentials, verify=False)
+                                  data=credentials, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -59,7 +57,7 @@ class ML:
         while not succeeded:
             try:
                 r = requests.get(url, cookies=self._cookies, headers=headers,
-                                verify=False, params=get_params)
+                                 verify=False, params=get_params)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -68,14 +66,14 @@ class ML:
 
     def put(self, url, data):
         headers = {'Accept': 'text/plain, */*; q=0.01', 'Content-Type':
-                   'application/json'}
+            'application/json'}
         # dirty way to retry on SSLErrors
         # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
         succeeded = False
         while not succeeded:
             try:
                 r = requests.put(url, cookies=self._cookies, data=json.dumps(data),
-                                headers=headers, verify=False)
+                                 headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -91,7 +89,7 @@ class ML:
         while not succeeded:
             try:
                 r = requests.post(url, cookies=self._cookies, data=json.dumps(data),
-                                headers=headers, verify=False)
+                                  headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -100,14 +98,14 @@ class ML:
 
     def postXml(self, url, data):
         iheaders = {'Accept': 'text/plain, */*; q=0.01',
-                   'Content-Type': 'application/xml'}
+                    'Content-Type': 'application/xml'}
         # dirty way to retry on SSLErrors
         # http://stackoverflow.com/questions/14167508/intermittent-sslv3-alert-handshake-failure-under-python
         succeeded = False
         while not succeeded:
             try:
                 r = requests.post(url, cookies=self._cookies, data=data,
-                                headers=iheaders, verify=False)
+                                  headers=iheaders, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -117,7 +115,7 @@ class ML:
     def postMultipart(self, url, fields, files):
         content_type, body = self.encode_multipart_formdata(fields, files)
         headers = {
-                   'Content-Type': content_type}
+            'Content-Type': content_type}
 
         #print 'url=', url
         #print 'body=', body
@@ -129,7 +127,7 @@ class ML:
         while not succeeded:
             try:
                 r = requests.post(url, cookies=self._cookies, data=body,
-                                headers=headers, verify=False)
+                                  headers=headers, verify=False)
                 succeeded = True
             except (requests.exceptions.SSLError) as e:
                 print "Caught an SSL error. Retrying..."
@@ -159,18 +157,18 @@ class ML:
         :return: jid
         """
         url = self._server + "/matelive/api/jobs"
-        get_params = { 'size': 1,
-                       'offset': 0,
-                       'sortDir': 'dec',
-                       'sortProp': 'jobId',
-                       'filters': 'definitionId(' + did + ');'
+        get_params = {'size': 1,
+                      'offset': 0,
+                      'sortDir': 'dec',
+                      'sortProp': 'jobId',
+                      'filters': 'definitionId(' + did + ');'
         }
         r = self.get(url, get_params)
         jid = r.json()["jobList"][0]["jobId"]
         return jid
 
     # get csv data
-    def get_csv_file(self, jid):
+    def get_csv_file_server_based(self, jid):
         get_params = {}
         get_params['nPerPage'] = 0
         url = self._server + "/matelive/services/reportout/" + str(jid)
@@ -182,29 +180,26 @@ class ML:
         r = self.get(url)
         return r.text
 
-    def get_csv_file_direct(self, jid):
+    def get_csv_file(self, jid):
         get_params = {}
-        get_params['nPerPage'] = 999999999 #should give "all" rows
+        get_params['nPerPage'] = 999999999  #should give "all" rows
         url = self._server + "/matelive/services/reportout/" + str(jid)
         r = self.get(url, get_params)
 
         r_data_headers = r.json()["table"]["headers"]
         r_data_rows = r.json()["table"]["rows"]
 
-        # Convert JSON to TSV by extending a list and
-        # returning a join of that list
+        # Create list from json, starting with headers
         str_list = ['\t'.join(r_data_headers), '\n']
 
         # The following list comprehension is basically this loop:
         # for row in r_data_rows:
         #     str_list.extend(['\t'.join(row),'\n'])
         # but is faster since it doesn't call extend repeatedly
-
         str_list.append(''.join(('\t'.join(row) + '\n') for row in r_data_rows))
 
+        # Return the list joined to an empty string
         return ''.join(str_list)
-
-
 
 
     def flush_myreports(self):
@@ -219,7 +214,7 @@ class ML:
             r = self.put(url, data)
             # exit if error
             r.raise_for_status()
-            print 'delete {:<50s} [{:s}]   {:s}'.\
+            print 'delete {:<50s} [{:s}]   {:s}'. \
                 format(report["definitionName"], str(r.status_code), r.text)
 
     def flush_props(self):
@@ -230,11 +225,11 @@ class ML:
         for prop in props:
             prop_name = prop["name"]
             url = self._server + "/matelive/api/properties/" + \
-                str(prop["objectType"]) + "/" + str(prop_name)
+                  str(prop["objectType"]) + "/" + str(prop_name)
             r = self.delete(url)
             # exit if error
             r.raise_for_status()
-            print 'delete {:<50s} [{:s}]   {:s}'.\
+            print 'delete {:<50s} [{:s}]   {:s}'. \
                 format(prop_name, str(r.status_code), r.text)
 
     def my_reports_list(self):
@@ -275,7 +270,7 @@ class ML:
                 r = self.post(url, reportdef)
                 print '{:<3d} {:50s} [{:s}]   {:s}'.format(counter, reportdef["name"], str(r.status_code), r.text)
                 url = self._server + "/matelive/api/definitions/" + \
-                    str(reportdef["definitionId"])
+                      str(reportdef["definitionId"])
                 # set isMyReport to true in case the report existed
                 if r.status_code == 201:
                     did = r.text
@@ -330,10 +325,10 @@ class ML:
 
     def explore(self, object_type, filter=None, count=10, properties=None, sort_prop=None, sort_dir='dec'):
         ''' Get the list of objects.'''
-        get_params = {'size':         count,
-                      'offset':       '0',
+        get_params = {'size': count,
+                      'offset': '0',
                       'hideInactive': 'true'
-                      }
+        }
         if filter:
             get_params['filter'] = filter
         if sort_prop:
@@ -383,14 +378,14 @@ class ML:
         get_params = {}
         get_params['nPerPage'] = 0
         url = self._server + "/matelive/services/reportout/" + str(jid)
-        r = self.get(url,get_params)
+        r = self.get(url, get_params)
         sorts_list = r.json().get('table').get('sorts')
         sorts = ""
         if sorts_list:
             for s in sorts_list:
-                    sorts += str(s['colIndex'])+"("+ str(s['sortDir']) + ")"
+                sorts += str(s['colIndex']) + "(" + str(s['sortDir']) + ")"
         filters = r.json().get('table').get('filters')
-        mymltable = self.get_report(jid,count=1000000,sorts=sorts,filters=filters)
+        mymltable = self.get_report(jid, count=1000000, sorts=sorts, filters=filters)
         return {'sorts': sorts, 'filters': filters}
 
     def get_filtered_report(self, jid, columns=None, count=10):
@@ -431,6 +426,7 @@ class ML:
 
     def get_plan(self, date=None):
         from requests.auth import HTTPBasicAuth
+
         headers = {'Accept': 'application/json, text/javascript, */*'}
         get_params = {}
         if date:
@@ -455,8 +451,8 @@ class ML:
     def time_series(self, ob, prop, keys, date_from, date_to, keyColumns=None):
         keys_names = {}
         keys_names[ob] = self.keys(ob)
-        
-	if keyColumns!=None:
+
+        if keyColumns != None:
             keys_names[ob] = keyColumns
 
         keys_json = []
@@ -465,20 +461,19 @@ class ML:
                 {'name': keys_names[ob][i], 'value': keys[i]}
             )
 
-
         date_pattern = "%Y-%m-%d %H:%M:00"
         data = {'hasRawData': True,
                 'isLive': True,
                 'objectKeys': [{'keyPairs': keys_json}],
                 'objectType': ob,
                 'properties': [{
-                    'aggregationMode': 'Last',
-                    'name': prop
-                }],
+                                   'aggregationMode': 'Last',
+                                   'name': prop
+                               }],
                 'reportType': 'Adhoc',
                 'timeFrom': time.strftime(date_pattern, date_from),
                 'timeTo': time.strftime(date_pattern, date_to),
-                }
+        }
         #        'timeRangeUnits': 'day',
         #        'timeRangeValue': '1'
         url = self._server + "/matelive/api/jobs/live"
@@ -501,7 +496,7 @@ class ML:
                 'reportType': 'Adhoc',
                 'timeFrom': time.strftime(date_from),
                 'timeTo': time.strftime(date_to),
-                }
+        }
         url = self._server + "/matelive/api/jobs/live"
         r = self.post(url, data)
         csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
@@ -514,11 +509,11 @@ class ML:
         data = fh.read()
 
         url = self._server + "/matelive/api/data/newtable/"
-        if re.search('tableDefinition',data):
+        if re.search('tableDefinition', data):
             # for xml format
             r = self.postXml(url, data)
         else:
-	    data = json.loads(data)
+            data = json.loads(data)
             r = self.post(url, data)
         return r
 
@@ -528,13 +523,13 @@ class ML:
 
         url = self._server + "/matelive/api/data/" + table
         if timestamp:
-	    fields = [('time',timestamp)]
+            fields = [('time', timestamp)]
         else:
-	    fields = [('time','')]
+            fields = [('time', '')]
 
-	files = [('attachment',file,file_content)]
-    
-	r = self.postMultipart(url, fields, files)
+        files = [('attachment', file, file_content)]
+
+        r = self.postMultipart(url, fields, files)
         return r
 
     def drop_table(self, table):
@@ -543,7 +538,7 @@ class ML:
         return r
 
 
-    def encode_multipart_formdata(self, fields, files): 
+    def encode_multipart_formdata(self, fields, files):
         """
         fields is a sequence of (name, value) elements for regular form fields.
         files is a sequence of (name, filename, value) elements for data to be uploaded as files
@@ -574,11 +569,11 @@ class ML:
         data = fh.read()
 
         url = self._server + "/matelive/api/data/" + table + "/update?file=" + file
-        if re.search('tableDefinition',data):
+        if re.search('tableDefinition', data):
             # for xml format
             r = self.postXml(url, data)
         else:
-	    data = json.loads(data)
+            data = json.loads(data)
             r = self.post(url, data)
         return r
 
@@ -587,21 +582,23 @@ class ML:
         r = self.put(url, '')
         return r
 
+
 def parse_url(url):
     parsed = urlparse(url)
     new_url = None
     if parsed.port:
         new_url = parsed.scheme + "://" + \
-            str(parsed.hostname) + ":" + str(parsed.port)
+                  str(parsed.hostname) + ":" + str(parsed.port)
     else:
         new_url = parsed.scheme + "://" + parsed.hostname
     return parsed.username, parsed.password, new_url
 
 
-class MLTable (dict):
+class MLTable(dict):
     '''
     handles list printing
     '''
+
     def print_col(self):
         '''
         display this:
