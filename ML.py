@@ -184,18 +184,28 @@ class ML:
 
     def get_csv_file_direct(self, jid):
         get_params = {}
-        get_params['nPerPage'] = 99999
+        get_params['nPerPage'] = 999999999 #should give "all" rows
         url = self._server + "/matelive/services/reportout/" + str(jid)
         r = self.get(url, get_params)
-        r_data = r.json()
-        r_data_csv =''
-        r_data_csv.append('\t'.join((r_data['table']['headers'])
-        print '\t'.join((r_data['table']['headers']))
 
-        for row in (r_data['table']['rows']):
-            print '\t'.join(row)
-        print "done"
-        return r
+        r_data_headers = r.json()["table"]["headers"]
+        r_data_rows = r.json()["table"]["rows"]
+
+        # Convert JSON to TSV by extending a list and
+        # returning a join of that list
+        str_list = ['\t'.join(r_data_headers), '\n']
+
+        # The following list comprehension is basically this loop:
+        # for row in r_data_rows:
+        #     str_list.extend(['\t'.join(row),'\n'])
+        # but is faster since it doesn't call extend repeatedly
+
+        str_list.append(''.join(('\t'.join(row) + '\n') for row in r_data_rows))
+
+        return ''.join(str_list)
+
+
+
 
     def flush_myreports(self):
         url = self._server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
