@@ -25,6 +25,7 @@ from urlparse import urlparse
 
 import requests
 import re
+from pprint import pprint
 
 
 class ML:
@@ -181,6 +182,20 @@ class ML:
         r = self.get(url)
         return r.text
 
+    def get_csv_file_direct(self, jid):
+        get_params = {}
+        get_params['nPerPage'] = 99999
+        url = self._server + "/matelive/services/reportout/" + str(jid)
+        r = self.get(url, get_params)
+        r_data = r.json()
+        r_data_csv =''
+        r_data_csv.append('\t'.join((r_data['table']['headers'])
+        print '\t'.join((r_data['table']['headers']))
+
+        for row in (r_data['table']['rows']):
+            print '\t'.join(row)
+        print "done"
+        return r
 
     def flush_myreports(self):
         url = self._server + "/matelive/api/myreports?size=1000&offset=0&sortDir=dec&sortProp=definitionId&filters="
