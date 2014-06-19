@@ -478,6 +478,9 @@ class ML:
         #        'timeRangeValue': '1'
         url = self._server + "/matelive/api/jobs/live"
         # should not be needed
+        print url
+        import sys
+        sys.exit()
         r = self.post(url, data)
         csvurl = r.json()['rors'][0]['propOuts'][0]['raw']['csvUrl']
         url = self._server + "/" + csvurl
