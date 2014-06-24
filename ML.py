@@ -18,7 +18,7 @@ import calendar
 import json
 import time
 #import urllib
-#import sys
+import sys
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from urlparse import urlparse
@@ -196,7 +196,8 @@ class ML:
         # for row in r_data_rows:
         #     str_list.extend(['\t'.join(row),'\n'])
         # but is faster since it doesn't call extend repeatedly
-        str_list.append(''.join(('\t'.join(row) + '\n') for row in r_data_rows))
+        if r_data_rows:
+            str_list.append(''.join(('\t'.join(row) + '\n') for row in r_data_rows))
 
         # Return the list joined to an empty string
         return ''.join(str_list)
