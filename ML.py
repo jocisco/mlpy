@@ -508,10 +508,10 @@ class ML:
         r = self.get(url)
         return r.text
 
-    def create_table(self, file):
-        fh = open(file, "r+")
-        data = fh.read()
-
+    def create_table(self, file=None, data=None):
+        if data == None:
+            fh = open(file, "r+")
+            data = fh.read()
         url = self._server + "/matelive/api/data/newtable/"
         if re.search('tableDefinition', data):
             # for xml format
