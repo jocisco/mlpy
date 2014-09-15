@@ -1,0 +1,26 @@
+{
+    "comments": "generated variables $$(jobid) $$(map_archive_dir) $$(template_file) $$(cariden_home) $$(planFilePath) $$(planFileName) $$(timeStamp) $$(iso8601Time) $$(archiveTime) $$(plan_out_dir)",
+    "environment": {
+        "cmd_verbosity": 30
+    },
+    "commands": {
+        "TEST1": {
+            "cmd": "echo",
+            "cmd_opt": [ 1 ]
+        },
+        "TEST2": {
+            "cmd": "/home/cariden/process_ml_insert_plan_output",
+            "cmd_opt": [ $$(jobid) ]
+        }
+    },
+    "task": {
+        "TEST1": {
+            "taskDependency": [],
+            "jobDependency": "JOB_TASK"
+        },
+        "TEST2": {
+            "taskDependency": [],
+            "jobDependency": "JOB_TASK"
+        }
+    }
+}

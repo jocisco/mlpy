@@ -1,0 +1,1 @@
+cat /opt/cariden/data/mldata/jobs/${1}/*.out | wc -l
