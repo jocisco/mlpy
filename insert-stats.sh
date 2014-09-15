@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# use the following to cron this task
+# */5 * * * * /home/cariden/mlpy/insert-stats.sh > /tmp/insert-stats.log
+
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd $DIR
 
@@ -21,5 +24,5 @@ date2=`date -u "+%y%m%d_%H%M_UTC"`
 $python ./import_data.py $server $table_name /tmp/server.tsv  -timestamp "$date"
 
 # verify
-$python explore.py $server $table_name
-$python time-series.py $server $table_name cpu mldev01 $date1 $date2
+#$python explore.py $server $table_name
+$python ./time-series.py $server $table_name cpu mldev01 $date1 $date2

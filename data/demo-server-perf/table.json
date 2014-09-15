@@ -1,6 +1,6 @@
 {
     "name": "ServerPerf",
-    "display" : "ServerPerf",
+    "display" : "Server Performance",
     "columnsMetaData": [
         {
             "name" : "server",
@@ -12,15 +12,8 @@
     ],
     "seriesMetaData": [
         {
-            "name" : "sda1",
-            "display" : "sda1 %",
-            "freq" : "HF",
-            "dataType" : "real",
-            "isActive" : "true"
-        },
-        {
-            "name" : "sdb1",
-            "display" : "sdb1 %",
+            "name" : "cpu",
+            "display" : "CPU %",
             "freq" : "HF",
             "dataType" : "real",
             "isActive" : "true"
@@ -33,12 +26,33 @@
             "isActive" : "true"
         },
         {
-            "name" : "cpu",
-            "display" : "CPU %",
+            "name" : "dsdisk",
+            "display" : "Datastore Disk %",
             "freq" : "HF",
             "dataType" : "real",
             "isActive" : "true"
-        }
+        },
+	{
+	    "name" : "dsmem",
+	    "display" : "Datastore Mem %",
+	    "freq" : "HF",
+	    "dataType" : "real",
+	    "isActive" : "true"
+	},
+	{
+	    "name" : "jvm",
+	    "display" : "JVM mem %",
+	    "freq" : "HF",
+	    "dataType" : "real",
+	    "isActive" : "true"
+	},
+	{
+	    "name" : "jdbconn",
+	    "display" : "JDBC conection",
+	    "freq" : "HF",
+	    "dataType" : "real",
+	    "isActive" : "true"
+	}
     ]
 }
 
